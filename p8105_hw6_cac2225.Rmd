@@ -4,3 +4,56 @@ author: "Courtney Chan"
 date: "November 26, 2018"
 output: github_document
 ---
+
+#Homework 6
+
+##Problem 0
+A github repo and local R project was created, an Rmd file was produced, knitted, and committed to github.
+
+##Problem 1
+
+First loading all necessary packages
+
+```{r loading necessary packages}
+library(tidyverse)
+library(rvest)
+library(readr)
+library(stringr)
+
+```
+
+The csv file is imported using the read_csv function and the dataset is cleaned.
+
+```{r}
+
+homicide = read_csv("./data/homicide-data.csv") %>% 
+  janitor::clean_names()
+
+```
+
+
+A city_state variable is created using the functions paste and mutate. Also a "solved" variable is created to indicate which cases have or have not been solved based on homework 5's prompt. The number of unsolved homicides is defined as those for which the disposition is “Closed without arrest” or “Open/No arrest”). City_states Dallas, TX, Pheonix, AZ, Kansas City, MO and Tulsa, AL are filtered out of the dataset.
+
+
+```{r creating city_state variable, mutating solved, filtering city_state}
+
+homicide = homicide %>% 
+  mutate(city_state = paste(city,",",state)) %>%   
+  mutate(solved = recode(disposition, "Closed without arrest" = "Unsolved", "Open/No arrest" = "Unsolved", "Closed by arrest" = "Solved")) %>% 
+  filter(city_state != "Dallas , TX", city_state != "Pheonix , AZ", city_state != "Kansas City , MO", city_state != "Tulsa , AL")
+```
+
+The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory.
+
+```{r modifying victim_race variable }
+
+homicide = homicide %>% 
+  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("White", "Non-white")))
+
+is.factor(homicide$victim_race)
+
+```
+
+
+
+##Problem 2
