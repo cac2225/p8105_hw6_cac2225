@@ -43,17 +43,26 @@ homicide = homicide %>%
   filter(city_state != "Dallas , TX", city_state != "Pheonix , AZ", city_state != "Kansas City , MO", city_state != "Tulsa , AL")
 ```
 
-The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory.
+The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory. Hispanic, Asian, Black, Other and Unknown were coded as "Non-white".
 
 ```{r modifying victim_race variable }
 
 homicide = homicide %>% 
-  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("White", "Non-white")))
+  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white", "Other" = "Non-white", "Unknown" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("White", "Non-white")))
 
 is.factor(homicide$victim_race)
 
 ```
+Victim_age is first checked to see whether it is a numeric variable. Since it is not, the "unknown" category is first recoded as "NA". Then victim_age is defined as a numeric variable. It is checked again to see whether it was converted successfully into an numeric variable.
 
+```{r victim_age}
 
+is.numeric(homicide$victim_age)
 
+homicide = homicide %>% 
+  mutate(victim_age = recode(victim_age, "Unknown" = "NA")) %>% mutate(victim_age = as.numeric(factor(victim_age)))
+
+is.numeric(homicide$victim_age)
+
+```
 ##Problem 2
