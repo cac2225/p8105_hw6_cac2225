@@ -65,4 +65,7 @@ homicide = homicide %>%
 is.numeric(homicide$victim_age)
 
 ```
+
+
+
 ##Problem 2
