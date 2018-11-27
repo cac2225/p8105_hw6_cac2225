@@ -33,14 +33,14 @@ homicide = read_csv("./data/homicide-data.csv") %>%
 A city_state variable is created using the functions paste and mutate. Also a "solved" variable is created to indicate which cases have or have not been solved based on homework 5's prompt. The number of unsolved homicides is defined as those for which the disposition is “Closed without arrest” or “Open/No arrest”). City_states Dallas, TX, Pheonix, AZ, Kansas City, MO and Tulsa, AL are filtered out of the dataset.
 
 
-```{r creating city_state variable, mutating solved, filtering city_state}
+```{r creating city_state variable, mutating solved, filtering city_state 2}
 
 homicide = homicide %>% 
-  mutate(city_state = paste(city,",",state)) %>%   
+  mutate(city_state = str_c(city,", ",state)) %>% 
   mutate(solved = recode(disposition, "Closed without arrest" = "Unsolved", "Open/No arrest" = "Unsolved", "Closed by arrest" = "Solved")) %>% 
-  filter(city_state != "Dallas , TX", city_state != "Pheonix , AZ", city_state != "Kansas City , MO", city_state != "Tulsa , AL")
+  filter(city_state != "Dallas, TX", city_state != "Phoenix, AZ", city_state != "Kansas City, MO", city_state != "Tulsa, AL")
+  
 ```
-
 The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory. Hispanic, Asian, Black, Other and Unknown were coded as "Non-white".
 
 ```{r modifying victim_race variable }
@@ -87,5 +87,29 @@ baltimore %>%
 For cases in Baltimore, MD, the point estimate describing the relationship between the outcome of solved homicides and the predictor victim race, adjusting for victim age and victim sex is 0.441, with a 95% confidence interval of 0.313 to 0.62.
 
 For cases in Baltimate, MD, the odds of having a solved case amongst those who are non-white is 0.441 times the odds of having a solved case amongst those who are white, adjusting for victim age and sex. We are 95% confident that the true odds ratio lies between 0.313 and 0.62.
+
+```{r applying glm to selected homicide df}
+
+df_homicide = 
+  homicide %>%
+  group_by(city_state) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~glm(solved ~ victim_age +  victim_sex + victim_race, data = ., family = binomial())), 
+model = map(model, broom::tidy)) %>% 
+  select(-data) %>% 
+  unnest() %>% 
+   mutate(OR = exp(estimate)) %>% 
+  mutate(conf.low = exp(estimate - (1.96*std.error)),
+         conf.high = exp(estimate + (1.96*std.error))) %>% select(city_state, term, estimate, OR, conf.low, conf.high) %>% 
+  filter(term == "victim_raceWhite") %>%
+  knitr::kable(digits = 3)
+
+df_homicide
+
+```
+
+Glm is applied to each city_state and an OR with 95% confidence intervals is calculated for each city_state, comparing the odds of the case being solved, between non-whites and whites, adjusting for sex and age. 
+
+
 
 ##Problem 2
