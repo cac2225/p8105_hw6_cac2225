@@ -16,9 +16,7 @@ First loading all necessary packages
 
 ```{r loading necessary packages}
 library(tidyverse)
-library(rvest)
-library(readr)
-library(stringr)
+
 
 ```
 
@@ -48,7 +46,7 @@ The victim race variable is modified to be binary and for the catagory "White" t
 ```{r modifying victim_race variable }
 
 homicide = homicide %>% 
-  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white", "Other" = "Non-white", "Unknown" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("White", "Non-white")))
+  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white", "Other" = "Non-white", "Unknown" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("Non-white", "White")))
 
 is.factor(homicide$victim_race)
 
@@ -60,12 +58,34 @@ Victim_age is first checked to see whether it is a numeric variable. Since it is
 is.numeric(homicide$victim_age)
 
 homicide = homicide %>% 
-  mutate(victim_age = recode(victim_age, "Unknown" = "NA")) %>% mutate(victim_age = as.numeric(factor(victim_age)))
+ mutate(victim_age = as.numeric(victim_age)) %>% 
+  mutate(factor(solved)) %>% 
+  mutate(solved = factor(solved, levels = c("Solved", "Unsolved")))
 
 is.numeric(homicide$victim_age)
 
+is.factor(homicide$solved)
+
 ```
 
+```{r baltimore analysis alone}
 
+baltimore = homicide %>% 
+  filter(city_state == "Baltimore , MD") %>% 
+  glm(solved ~ victim_age +  victim_sex + victim_race, data = ., family = binomial())
+
+baltimore %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate)) %>% 
+  mutate(conf.low = exp(estimate - (1.96*std.error)),
+         conf.high = exp(estimate + (1.96*std.error))) %>% select(term, estimate, OR, conf.low, conf.high) %>% 
+  filter(term == "victim_raceWhite") %>%
+  knitr::kable(digits = 3)
+  
+```
+
+For cases in Baltimore, MD, the point estimate describing the relationship between the outcome of solved homicides and the predictor victim race, adjusting for victim age and victim sex is 0.441, with a 95% confidence interval of 0.313 to 0.62.
+
+For cases in Baltimate, MD, the odds of having a solved case amongst those who are non-white is 0.441 times the odds of having a solved case amongst those who are white, adjusting for victim age and sex. We are 95% confident that the true odds ratio lies between 0.313 and 0.62.
 
 ##Problem 2
