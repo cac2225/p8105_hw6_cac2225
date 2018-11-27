@@ -71,7 +71,7 @@ is.factor(homicide$solved)
 ```{r baltimore analysis alone}
 
 baltimore = homicide %>% 
-  filter(city_state == "Baltimore , MD") %>% 
+  filter(city_state == "Baltimore, MD") %>% 
   glm(solved ~ victim_age +  victim_sex + victim_race, data = ., family = binomial())
 
 baltimore %>% 
@@ -79,9 +79,8 @@ baltimore %>%
   mutate(OR = exp(estimate)) %>% 
   mutate(conf.low = exp(estimate - (1.96*std.error)),
          conf.high = exp(estimate + (1.96*std.error))) %>% select(term, estimate, OR, conf.low, conf.high) %>% 
-  filter(term == "victim_raceWhite") %>%
-  knitr::kable(digits = 3)
-  
+  filter(term == "victim_raceWhite")
+
 ```
 
 For cases in Baltimore, MD, the point estimate describing the relationship between the outcome of solved homicides and the predictor victim race, adjusting for victim age and victim sex is 0.441, with a 95% confidence interval of 0.313 to 0.62.
@@ -101,15 +100,18 @@ model = map(model, broom::tidy)) %>%
    mutate(OR = exp(estimate)) %>% 
   mutate(conf.low = exp(estimate - (1.96*std.error)),
          conf.high = exp(estimate + (1.96*std.error))) %>% select(city_state, term, estimate, OR, conf.low, conf.high) %>% 
-  filter(term == "victim_raceWhite") %>%
-  knitr::kable(digits = 3)
+  filter(term == "victim_raceWhite")
 
-df_homicide
 
 ```
 
 Glm is applied to each city_state and an OR with 95% confidence intervals is calculated for each city_state, comparing the odds of the case being solved, between non-whites and whites, adjusting for sex and age. 
 
+```{r plot estimate ORs and CIs for each city}
 
+df_homicide %>% 
+  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_bar(stat = "identity") + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted estimate ORs of solved cases, non- vs whites")
+
+```
 
 ##Problem 2
