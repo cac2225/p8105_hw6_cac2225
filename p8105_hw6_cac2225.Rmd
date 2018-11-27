@@ -110,8 +110,59 @@ Glm is applied to each city_state and an OR with 95% confidence intervals is cal
 ```{r plot estimate ORs and CIs for each city}
 
 df_homicide %>% 
-  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_bar(stat = "identity") + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted estimate ORs of solved cases, non- vs whites")
+  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_point() + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted estimate ORs of solved cases, non- vs whites")
 
 ```
 
 ##Problem 2
+
+
+The csv file is imported using the read_csv function and the dataset is cleaned.
+
+```{r importing data}
+
+birthweight = read_csv("./data/birthweight.csv") %>% 
+  janitor::clean_names()
+
+```
+
+```{r looking at the variable type}
+birthweight
+
+```
+
+According to the output, the variables are all integers. Looking at the data dictionary, variables that should be converted into factors should be baby sex, father's race, presence of malformations and mother's race.
+
+```{r recoding variables and converting variables into factors}
+
+birthweight = birthweight %>% 
+  mutate(babysex = recode(babysex, "1" = "male", "2" = "female"),
+         frace = recode(frace, "1" = "white", "2" = "black", "3" = "asian", "4" = "puerto rican", "8" = "other", "9" = "unknown"),
+         mrace = recode(mrace, "1" = "white", "2" = "black", "3" = "asian", "4" = "puerto rican", "8" = "other"),
+         malform = recode(malform, "0" = "absent", "1" = "present"))
+
+
+birthweight = birthweight %>% 
+  mutate(babysex = factor(babysex, levels = c("female", "male"))) %>% 
+           mutate(malform = factor(malform, levels = c("present", "absent")))
+         
+birthweight = birthweight %>% 
+         mutate(frace = factor(frace))
+
+birthweight = birthweight %>% 
+         mutate(mrace = factor(mrace))
+
+is.factor(birthweight$babysex)
+is.factor(birthweight$malform)
+is.factor(birthweight$frace)
+is.factor(birthweight$mrace)
+
+```
+
+To check for missing data
+
+```{r checking for missing data}
+
+
+
+```
