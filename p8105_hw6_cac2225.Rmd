@@ -116,6 +116,7 @@ df_homicide %>%
 
 ##Problem 2
 
+###Uploading the datafile, and dataset preparation/cleaning
 
 The csv file is imported using the read_csv function and the dataset is cleaned.
 
@@ -159,10 +160,18 @@ is.factor(birthweight$mrace)
 
 ```
 
-To check for missing data
+Checking for missing data within the birthweight dataset.
 
 ```{r checking for missing data}
 
-
+skimr::skim(birthweight)
 
 ```
+
+Looking at the missing column for each variable, there are no missing values.
+
+###Proposed model
+
+
+
+###Comparison of model 
