@@ -118,7 +118,10 @@ Glm is applied to each city_state and an OR with 95% confidence intervals is cal
 ```{r plot estimate ORs and CIs for each city}
 
 df_homicide %>% 
-  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_point() + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted ORs of solved cases, non-white vs white")
+  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + 
+  xlab("city, state") + 
+  ylab("adjusted ORs of solved cases, non-white vs white")
 
 ```
 
@@ -203,7 +206,9 @@ First the residual values are plotted against each predictor variable. The resid
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = wtgain, y = resid)) + geom_point() +   labs(
+  ggplot(aes(x = wtgain, y = resid)) + 
+  geom_point() +   
+  labs(
     x = "predictor weight gain",
     y = "residuals",
     title = "scatterplot of weight gain variable vs residuals")
@@ -214,7 +219,9 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = ppbmi, y = resid)) + geom_point() + labs(
+  ggplot(aes(x = ppbmi, y = resid)) + 
+  geom_point() + 
+  labs(
     x = "predictor pre pregnancy bmi",
     y = "residuals",
     title = "scatterplot of pre pregnancy bmi vs. residuals")
@@ -225,7 +232,9 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = smoken, y = resid)) + geom_point() + labs(
+  ggplot(aes(x = smoken, y = resid)) + 
+  geom_point() + 
+  labs(
     x = "predictor smoken",
     y = "residuals",
     title = "scatterplot of avg number of cigarettes per day during pregnancy vs residuals")
@@ -236,7 +245,9 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = resid)) + geom_density() + labs(
+  ggplot(aes(x = resid)) + 
+  geom_density() + 
+  labs(
     x = "residuals",
     y = "density",
     title = "density plot of residuals")
@@ -252,7 +263,9 @@ Finally, the residuals are plotted against the fitted values.
 birthweight %>% 
   modelr::add_predictions(lm_birthweight) %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(
+  ggplot(aes(x = pred, y = resid)) + 
+  geom_point() + 
+  labs(
     x = "fitted values",
     y = "residuals",
     title = "scatterplot of fitted values vs residuals")
@@ -300,7 +313,9 @@ cv_bwt %>%
   gather(key = model, value = rmse) %>% 
   mutate(model = str_replace(model, "rmse_", ""),
          model = fct_inorder(model)) %>% 
-  ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(
+  ggplot(aes(x = model, y = rmse)) + 
+  geom_violin() + 
+  labs(
     title = "model versus rmse value")
 
 ```
