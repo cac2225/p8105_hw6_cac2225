@@ -192,7 +192,10 @@ First the residual values are plotted against each predictor variable. The resid
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = wtgain, y = resid)) + geom_point()
+  ggplot(aes(x = wtgain, y = resid)) + geom_point() +   labs(
+    x = "predictor weight gain",
+    y = "residuals",
+    title = "scatterplot of weight gain variable vs residuals")
 
 ```
 
@@ -200,7 +203,10 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = ppbmi, y = resid)) + geom_point()
+  ggplot(aes(x = ppbmi, y = resid)) + geom_point() + labs(
+    x = "predictor pre pregnancy bmi",
+    y = "residuals",
+    title = "scatterplot of pre pregnancy bmi vs. residuals")
 
 ```
 
@@ -208,7 +214,10 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = smoken, y = resid)) + geom_point()
+  ggplot(aes(x = smoken, y = resid)) + geom_point() + labs(
+    x = "predictor smoken",
+    y = "residuals",
+    title = "scatterplot of avg number of cigarettes per day during pregnancy vs residuals")
 
 ```
 
@@ -216,7 +225,10 @@ birthweight %>%
 
 birthweight %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = resid)) + geom_density()
+  ggplot(aes(x = resid)) + geom_density() + labs(
+    x = "residuals",
+    y = "density",
+    title = "density plot of residuals")
 
 ```
 
@@ -229,11 +241,14 @@ Additionally, the residuals are plotted against the fitted values.
 birthweight %>% 
   modelr::add_predictions(lm_birthweight) %>% 
   modelr::add_residuals(lm_birthweight) %>% 
-  ggplot(aes(x = pred, y = resid)) + geom_point()
+  ggplot(aes(x = pred, y = resid)) + geom_point() + labs(
+    x = "fitted values",
+    y = "residuals",
+    title = "scatterplot of fitted values vs residuals")
 
 ```
 
-The residuals do not appear randomly scatted, in fact there seems to be some clustering slightly towards the left.
+The residuals do not appear randomly scattered around 0, in fact there seems to be some clustering slightly towards the left of the plot.
 
 This proposed model therefore is definitely not perfect. Non-linear models should be tested to see if they fit the data better. Each variable should be examined for outliers, which should be removed and the model rerun.
 
@@ -244,10 +259,47 @@ Creating and running the two other comparison linear models.
 
 ```{r two other linear models for comparison}
 
-lm_blength_gaweeks = lm(bwt ~  blength + gaweeks, data = birthweight)
+lm_one = lm(bwt ~  blength + gaweeks, data = birthweight)
 
-lm_bhead_blength_bsex = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = birthweight)
+lm_two = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = birthweight)
 
 ```
 
+The cross validation function is used to compare the three models and rsme values are calculated to quantify the fit of each model.
+
+```{r cross validation of the three models}
+cv_bwt = 
+  crossv_mc(birthweight, 100)
+
+cv_bwt = 
+  cv_bwt %>% 
+  mutate(lm_birthweight = map(train, ~lm(bwt ~  wtgain + ppbmi + smoken, data = .x)),
+         lm_one = map(train, ~lm(bwt ~  blength + gaweeks, data = .x)),
+         lm_two = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = .x))) %>% 
+  mutate(rmse_bwt = map2_dbl(lm_birthweight, test, ~rmse(model = .x, data = .y))) %>% 
+           mutate(rmse_one = map2_dbl(lm_one, test, ~rmse(model = .x, data = .y))) %>% 
+           mutate(rmse_two = map2_dbl(lm_two, test, ~rmse(model = .x, data = .y)))
+
+
+cv_bwt = 
+  cv_bwt %>% 
+  mutate(lm_birthweight = map(train, ~lm(bwt ~  wtgain + ppbmi + smoken, data = .x)),
+         lm_one = map(train, ~lm(bwt ~  blength + gaweeks, data = .x)),
+         lm_two = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = .x))) %>% 
+  mutate(rmse_bwt = map2_dbl(lm_birthweight, test, ~rmse(model = .x, data = .y)), 
+         rmse_one = map2_dbl(lm_one, test, ~rmse(model = .x, data = .y)), 
+         rmse_two = map2_dbl(lm_two, test, ~rmse(model = .x, data = .y)))
+
+```
+
+```{r violin plots of rsme values for each model}
+
+cv_bmt %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+
+```
 
