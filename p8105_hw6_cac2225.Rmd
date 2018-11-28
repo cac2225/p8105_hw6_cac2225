@@ -10,8 +10,6 @@ output: github_document
 ##Problem 0
 A github repo and local R project was created, an Rmd file was produced, knitted, and committed to github.
 
-##Problem 1
-
 First loading all necessary packages for the homework assignment.
 
 ```{r loading necessary packages}
@@ -20,6 +18,10 @@ library(modelr)
 library(mgcv)
 
 ```
+
+##Problem 1
+
+###Uploading homicide dataset, cleaning up datset and the variables
 
 The csv file is imported using the read_csv function and the dataset is cleaned.
 
@@ -31,7 +33,7 @@ homicide = read_csv("./data/homicide-data.csv") %>%
 ```
 
 
-A city_state variable is created using the functions paste and mutate. Also a "solved" variable is created to indicate which cases have or have not been solved based on homework 5's prompt. The number of unsolved homicides is defined as those for which the disposition is “Closed without arrest” or “Open/No arrest”). City_states Dallas, TX, Pheonix, AZ, Kansas City, MO and Tulsa, AL are filtered out of the dataset.
+A city_state variable is created using the functions paste and mutate. Also a "solved" variable is created to indicate which cases have or have not been solved based on homework 5's prompt. The number of unsolved homicides is defined as those for which the disposition is “Closed without arrest” or “Open/No arrest”). City_states Dallas, TX, Phoenix, AZ, Kansas City, MO and Tulsa, AL are filtered out of the dataset.
 
 
 ```{r creating city_state variable, mutating solved, filtering city_state 2}
@@ -42,17 +44,18 @@ homicide = homicide %>%
   filter(city_state != "Dallas, TX", city_state != "Phoenix, AZ", city_state != "Kansas City, MO", city_state != "Tulsa, AL")
   
 ```
-The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory. Hispanic, Asian, Black, Other and Unknown were coded as "Non-white".
+The victim race variable is modified to be binary and for the catagory "White" to be defined as the reference catagory. Hispanic, Asian, Black, Other and Unknown were coded as "Non-white". Victim race is checked to ensure that it is a factor.
 
 ```{r modifying victim_race variable }
 
 homicide = homicide %>% 
-  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white", "Other" = "Non-white", "Unknown" = "Non-white")) %>%  mutate(victim_race = factor(victim_race, levels = c("Non-white", "White")))
+  mutate(victim_race = recode(victim_race, "Black" = "Non-white", "Hispanic" = "Non-white", "Asian" = "Non-white", "Other" = "Non-white", "Unknown" = "Non-white")) %>%  
+  mutate(victim_race = factor(victim_race, levels = c("Non-white", "White")))
 
 is.factor(homicide$victim_race)
 
 ```
-Victim_age is first checked to see whether it is a numeric variable. Since it is not, the "unknown" category is first recoded as "NA". Then victim_age is defined as a numeric variable. It is checked again to see whether it was converted successfully into an numeric variable.
+Victim_age is first checked to see whether it is a numeric variable. Since it is not, victim_age is defined as a numeric variable using the as.numeric function. It is checked again to see whether it was converted successfully into an numeric variable.
 
 ```{r victim_age}
 
@@ -65,9 +68,11 @@ homicide = homicide %>%
 
 is.numeric(homicide$victim_age)
 
-is.factor(homicide$solved)
-
 ```
+
+###Baltimore Analysis alone
+
+The original dataset is filtered for Baltimore, MD alone, and a logisitic regression is performed.
 
 ```{r baltimore analysis alone}
 
@@ -84,9 +89,11 @@ baltimore %>%
 
 ```
 
-For cases in Baltimore, MD, the point estimate describing the relationship between the outcome of solved homicides and the predictor victim race, adjusting for victim age and victim sex is 0.441, with a 95% confidence interval of 0.313 to 0.62.
+For cases in Baltimore, MD, the OR point estimate describing the relationship between the outcome of solved homicides and the predictor victim race, adjusting for victim age and victim sex is 0.441, with a 95% confidence interval of 0.313 to 0.62.
 
 For cases in Baltimate, MD, the odds of having a solved case amongst those who are non-white is 0.441 times the odds of having a solved case amongst those who are white, adjusting for victim age and sex. We are 95% confident that the true odds ratio lies between 0.313 and 0.62.
+
+###Applying Glm to homicide dataframe
 
 ```{r applying glm to selected homicide df}
 
@@ -111,9 +118,11 @@ Glm is applied to each city_state and an OR with 95% confidence intervals is cal
 ```{r plot estimate ORs and CIs for each city}
 
 df_homicide %>% 
-  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_point() + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted estimate ORs of solved cases, non- vs whites")
+  ggplot(aes(fct_reorder(city_state, desc(OR)), OR)) + geom_point() + geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + theme(axis.text.x = element_text(angle = 90)) + ggtitle("estimated adjusted ORs and confidence intervals per city, state") + xlab("city, state") + ylab("adjusted ORs of solved cases, non-white vs white")
 
 ```
+
+A plot is created, with each point indicating the OR values for each city_state with whiskers indicating 95% confidence intervals for each estimate. The city_states are arranged by descending OR values.
 
 ##Problem 2
 
@@ -128,7 +137,7 @@ birthweight = read_csv("./data/birthweight.csv") %>%
 
 ```
 
-```{r looking at the variable type}
+```{r looking at the variable types}
 birthweight
 
 ```
@@ -161,6 +170,8 @@ is.factor(birthweight$mrace)
 
 ```
 
+To confirm that these variables have been converted into factors, is.factor is used.
+
 Checking for missing data within the birthweight dataset.
 
 ```{r checking for missing data}
@@ -173,9 +184,9 @@ Looking at the missing column for each variable, there are no missing values.
 
 ###Proposed model
 
-There is some literature evidence that certain variables are associated with birthweight of infants. Maternal smoking is known to contribute to low birthweight thus in this model it would be important to include this variable. Maternal pre-pregnancy BMI may impact birthweight, with being underweight during pre-pregnancy leading to low birthweight babies and being overweight during pre-pregnancy leading to large for gestational age babies. Amount of gestational weight gained also impacts birthweight. However, it would be interesting to determine which variable has a stronger impact on birthweight.
+There is some literature evidence that certain variables are associated with birthweight of infants. Maternal smoking is known to contribute to low birthweight. Maternal pre-pregnancy BMI may impact birthweight, with being underweight during pre-pregnancy leading to low birthweight babies and being overweight during pre-pregnancy leading to large for gestational age babies. Amount of gestational weight gained also impacts birthweight. It would thus be interesting to determine which variable has a stronger impact on birthweight, adjusted for each other.
 
-This proposed model should thus include the following variables, to determine their association with birthweight: maternal pre-pregnancy BMI, gestational weight gain and maternal smoking during pregnancy.
+This proposed model thus includes the following variables, to determine their association with birthweight: maternal pre-pregnancy BMI, gestational weight gain and maternal smoking during pregnancy.
 
 ```{r initial model birthweight}
 
@@ -185,7 +196,7 @@ lm_birthweight = lm(bwt ~  wtgain + ppbmi + smoken, data = birthweight)
 
 To determine whether linear assumptions apply to this model, the residuals and fitted values are calculated and plotted.
 
-First the residual values are plotted against each predictor variable. The residual values for wtgain, ppbmi and smoken all appear to have non-random patterns. This proposed linear model may not be the best fit for this set of data. The residuals for the wtgain plot clearly clusters towards the middle of the graph. The residuals for ppbmi and smoken cluster towards the left of their respective plots.
+First the residual values are plotted against each predictor variable. The residual values for wtgain, ppbmi and smoken all appear to have non-random patterns. Looking at these plots alone, this proposed linear model may not be the best fit for this set of data. The residuals for the wtgain plot clearly clusters towards the middle of the graph. The residuals for ppbmi and smoken cluster towards the left of their respective plots.
 
 
 ```{r wtgain vs residuals}
@@ -234,7 +245,7 @@ birthweight %>%
 
 Looking at the density plot of the residuals alone, it seems although they center around 0, there is a slight skew to the left.
 
-Additionally, the residuals are plotted against the fitted values.
+Finally, the residuals are plotted against the fitted values.
 
 ```{r fitted values vs. residuals}
 
@@ -265,7 +276,7 @@ lm_two = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + bl
 
 ```
 
-The cross validation function is used to compare the three models and rsme values are calculated to quantify the fit of each model.
+The cross validation function is used to create testing and training datasets. The three linear regression models are performed on the training data, and to determine how well these linear models fit the testing data, rsme values are calculated.
 
 ```{r cross validation of the three models}
 cv_bwt = 
@@ -294,4 +305,4 @@ cv_bwt %>%
 
 ```
 
-Looking at the violin plots of the rmses, two has the lowest rmse value thus fits this data the best. My model's rmse is ridiculously high which confirms my previous diagnostic steps and thus needs to be seriously re-evaluated.
+Violin plots of model versus rsme values are created. Looking at the violin plots of the rmses, model two, whichi includes head circumference, length at birth, baby's sex and all of their interaction terms, has the lowest rmse value thus fits this data the best. My model's rmse is ridiculously high which confirms the findings of my previous diagnostic steps and thus needs to be seriously re-evaluated.
