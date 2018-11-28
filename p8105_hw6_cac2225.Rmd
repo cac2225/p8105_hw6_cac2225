@@ -12,11 +12,12 @@ A github repo and local R project was created, an Rmd file was produced, knitted
 
 ##Problem 1
 
-First loading all necessary packages
+First loading all necessary packages for the homework assignment.
 
 ```{r loading necessary packages}
 library(tidyverse)
-
+library(modelr)
+library(mgcv)
 
 ```
 
@@ -172,6 +173,81 @@ Looking at the missing column for each variable, there are no missing values.
 
 ###Proposed model
 
+There is some literature evidence that certain variables are associated with birthweight of infants. Maternal smoking is known to contribute to low birthweight thus in this model it would be important to include this variable. Maternal pre-pregnancy BMI may impact birthweight, with being underweight during pre-pregnancy leading to low birthweight babies and being overweight during pre-pregnancy leading to large for gestational age babies. Amount of gestational weight gained also impacts birthweight. However, it would be interesting to determine which variable has a stronger impact on birthweight.
+
+This proposed model should thus include the following variables, to determine their association with birthweight: maternal pre-pregnancy BMI, gestational weight gain and maternal smoking during pregnancy.
+
+```{r initial model birthweight}
+
+lm_birthweight = lm(bwt ~  wtgain + ppbmi + smoken, data = birthweight)
+
+```
+
+To determine whether linear assumptions apply to this model, the residuals and fitted values are calculated and plotted.
+
+First the residual values are plotted against each predictor variable. The residual values for wtgain, ppbmi and smoken all appear to have non-random patterns. This proposed linear model may not be the best fit for this set of data. The residuals for the wtgain plot clearly clusters towards the middle of the graph. The residuals for ppbmi and smoken cluster towards the left of their respective plots.
 
 
-###Comparison of model 
+```{r wtgain vs residuals}
+
+birthweight %>% 
+  modelr::add_residuals(lm_birthweight) %>% 
+  ggplot(aes(x = wtgain, y = resid)) + geom_point()
+
+```
+
+```{r ppbmi vs residuals}
+
+birthweight %>% 
+  modelr::add_residuals(lm_birthweight) %>% 
+  ggplot(aes(x = ppbmi, y = resid)) + geom_point()
+
+```
+
+```{r smoken vs residuals}
+
+birthweight %>% 
+  modelr::add_residuals(lm_birthweight) %>% 
+  ggplot(aes(x = smoken, y = resid)) + geom_point()
+
+```
+
+```{r overall distribution of residuals}
+
+birthweight %>% 
+  modelr::add_residuals(lm_birthweight) %>% 
+  ggplot(aes(x = resid)) + geom_density()
+
+```
+
+Looking at the density plot of the residuals alone, it seems although they center around 0, there is a slight skew to the left.
+
+Additionally, the residuals are plotted against the fitted values.
+
+```{r fitted values vs. residuals}
+
+birthweight %>% 
+  modelr::add_predictions(lm_birthweight) %>% 
+  modelr::add_residuals(lm_birthweight) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point()
+
+```
+
+The residuals do not appear randomly scatted, in fact there seems to be an upward positive trend.
+
+This proposed model therefore is definitely not perfect. Non-linear models should be tested to see if they fit the data better. Each variable should be examined for outliers, which should be removed and the model rerun.
+
+
+###Comparison of models
+
+Creating and running the two other comparison linear models.
+
+```{r two other linear models for comparison}
+
+lm_blength_gaweeks = lm(bwt ~  blength + gaweeks, data = birthweight)
+
+lm_bhead_blength_bsex = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = birthweight)
+
+```
+
+
