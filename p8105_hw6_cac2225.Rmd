@@ -280,26 +280,18 @@ cv_bwt =
            mutate(rmse_one = map2_dbl(lm_one, test, ~rmse(model = .x, data = .y))) %>% 
            mutate(rmse_two = map2_dbl(lm_two, test, ~rmse(model = .x, data = .y)))
 
-
-cv_bwt = 
-  cv_bwt %>% 
-  mutate(lm_birthweight = map(train, ~lm(bwt ~  wtgain + ppbmi + smoken, data = .x)),
-         lm_one = map(train, ~lm(bwt ~  blength + gaweeks, data = .x)),
-         lm_two = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = .x))) %>% 
-  mutate(rmse_bwt = map2_dbl(lm_birthweight, test, ~rmse(model = .x, data = .y)), 
-         rmse_one = map2_dbl(lm_one, test, ~rmse(model = .x, data = .y)), 
-         rmse_two = map2_dbl(lm_two, test, ~rmse(model = .x, data = .y)))
-
 ```
 
 ```{r violin plots of rsme values for each model}
 
-cv_bmt %>% 
+cv_bwt %>% 
   select(starts_with("rmse")) %>% 
   gather(key = model, value = rmse) %>% 
   mutate(model = str_replace(model, "rmse_", ""),
          model = fct_inorder(model)) %>% 
-  ggplot(aes(x = model, y = rmse)) + geom_violin()
+  ggplot(aes(x = model, y = rmse)) + geom_violin() + labs(
+    title = "model versus rmse value")
 
 ```
 
+Looking at the violin plots of the rmses, two has the lowest rmse value thus fits this data the best. My model's rmse is ridiculously high which confirms my previous diagnostic steps and thus needs to be seriously re-evaluated.
