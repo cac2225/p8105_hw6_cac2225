@@ -233,7 +233,7 @@ birthweight %>%
 
 ```
 
-The residuals do not appear randomly scatted, in fact there seems to be an upward positive trend.
+The residuals do not appear randomly scatted, in fact there seems to be some clustering slightly towards the left.
 
 This proposed model therefore is definitely not perfect. Non-linear models should be tested to see if they fit the data better. Each variable should be examined for outliers, which should be removed and the model rerun.
 
